@@ -1,0 +1,9 @@
+{
+  "name": "calc",
+  "version": "0.0.1",
+  "repo": "biblbrox/calc",
+  "description": "Terminal ansi escape goodies",
+  "keywords": ["terminal", "term", "tty", "ansi", "escape", "colors", "console"],
+  "license": "MIT",
+  "src": ["src/*", "deps/*"]
+}
