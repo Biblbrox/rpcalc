@@ -21,20 +21,15 @@ int isoperator(int c)
 
 int isvariable(char *s, map_double_t *variables) 
 {
-    double *val = map_get(variables, s); 
-    if (val)
-        return 1;
-
-    val = map_get(&initial_vars, s);
-
-    return val ? 1 : 0;
+    return map_get(variables, s) || map_get(&initial_vars, s);
 }
-
+ 
+/**
+ * Read all chars from f until EOF
+ */
 void clean_file(FILE *f)
 {
-    char c;
-    while(!feof(f))
-        c = fgetc(f);
+    while(!feof(f) && fgetc(f));
 }
 
 /**
@@ -44,10 +39,13 @@ void clean_linef(FILE *f)
 {
     if (!feof(f)) {
         char c;
-        while((c = getc(f)) != EOF && c != '\n') ;
+        while((c = getc(f)) != EOF && c != '\n');
     }
 }
 
+/**
+ * Get line which size doesn't exceed n from f and put to dest
+ */
 ssize_t getlinen(char dest[], const int n, FILE *f)
 {
     if (dest == NULL)
@@ -55,7 +53,7 @@ ssize_t getlinen(char dest[], const int n, FILE *f)
     
     char c;
     int k = 1;
-    while ((c = dest[k - 1] = fgetc(f)) != EOF && c != '\n' && k++ < n) ;
+    while ((c = dest[k - 1] = fgetc(f)) != EOF && c != '\n' && k++ < n);
     dest[k - 1] = '\0';
 
     if (c != '\n')
@@ -83,11 +81,33 @@ int isfunction(char *s)
     return 0;
 }
 
-void print_promt(void)
+int issign(char c)
 {
-    printf(GREEN">>> "RESET);
+    return c == SIGN_NEG || c == SIGN_POS;
 }
 
+/**
+ * Check if c is forbidden char that doesn't used in calculator
+ */
+int iswrongc(char c)
+{
+    if (!isspecial(c)
+     && !isdigit(c)
+     && !isalpha(c)
+     && !isoperator(c)
+     && c != SIGN_NEG
+     && c != SIGN_POS
+     && !iswhitespace(c)
+     && c != '.'
+     && c != '\0') 
+        return 1; 
+
+    return 0;
+}
+
+/**
+ * Return corresponding function 1-char code
+ */
 int func_code(char *func)
 {
     if (!isfunction(func))
@@ -134,19 +154,29 @@ int sgetch(char **str)
     return ret;
 }
 
+void print_crit(const char *fmt, ...)
+{
+    print_error(fmt);
+    exit(EXIT_FAILURE);
+}
+
 int print_error(const char *fmt, ...)
 {
     const short max_format = 1000;
     const short max_res = 1200;
+
     va_list args;
     va_start(args, fmt);
+
     char format[max_format];
     strcpy(format, RED);
     strcat(format, fmt);
     strcat(format, RESET);
+
     char res[max_res];
     int rc = vsnprintf(res, max_res, format, args);
     printf("%s", res);
+
     va_end(args);
     return rc;
 }

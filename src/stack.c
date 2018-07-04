@@ -72,10 +72,7 @@ double stack_pop(StackNode **top)
 
 double stack_peek(StackNode *top)
 {
-    if (top)
-        return top->val;
-
-    return 0.0;
+    return top ? top->val : 0.0;
 }
 
 void stack_dublicate(StackNode *top)

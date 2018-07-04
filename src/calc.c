@@ -8,26 +8,7 @@
 #include "utils.h"
 #include "vars.h"
 
-int iswrongc(char c)
-{
-    if (!isspecial(c)
-     && !isdigit(c)
-     && !isalpha(c)
-     && !isoperator(c)
-     && c != SIGN_NEG
-     && c != SIGN_POS
-     && !iswhitespace(c)) 
-        return 1; 
-
-    return 0;
-}
-
-int issign(char c)
-{
-    return c == SIGN_NEG || c == SIGN_POS;
-}
-
-uint8_t wrong_syntax(char *str)
+static uint8_t wrong_syntax(char *str)
 {
     int i = 0;
     while(str[i] != '\0') {
@@ -35,21 +16,26 @@ uint8_t wrong_syntax(char *str)
             return 1;
 
         if (isdigit(str[i])) {
-            if (str[i + 1] != '\0') 
-                if (!isoperator(str[i + 1])
-                 && !iswhitespace(str[i + 1])) 
-                    return 1;
+            if( str[i + 1] != '\0'
+            && !isoperator(str[i + 1])
+            && !iswhitespace(str[i + 1])
+            && !isdigit(str[i + 1])
+            && str[i + 1] != '.') 
+                return 1;
             
-            if (i != 0) 
-                if (!isoperator(str[i - 1]))
-                    if (!iswhitespace(str[i - 1])
-                    && !issign(str[i - 1]))
-                        return 1;
+            if (i != 0 
+            && !isoperator(str[i - 1])
+            && !iswhitespace(str[i - 1])
+            && !issign(str[i - 1])
+            && str[i - 1] != '.'
+            && !isdigit(str[i - 1]))
+                return 1;
         } 
 
-        if (isalpha(str[i]) && str[i + 1] != '\0') 
-            if (issign(str[i + 1]))
-                return 1;
+        if (isalpha(str[i]) 
+        && str[i + 1] != '\0'
+        && issign(str[i + 1])) 
+            return 1;
 
         i++;
     }
@@ -84,7 +70,8 @@ getop(char s[], StackNode *top, char **line, char *old_ptr)
         char op[MAX_OP_SIZE];
         int k = 1;
         op[0] = s[0];
-        while (isalpha(op[k] = c = sgetch(line))) k++;
+        while (isalpha(op[k] = c = sgetch(line))) 
+            k++;
 
         op[k] = '\0';
 

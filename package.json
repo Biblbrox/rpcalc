@@ -1,9 +1,9 @@
 {
-  "name": "calc",
+  "name": "rpcalc",
   "version": "0.0.1",
   "repo": "biblbrox/calc",
-  "description": "Terminal ansi escape goodies",
-  "keywords": ["terminal", "term", "tty", "ansi", "escape", "colors", "console"],
-  "license": "MIT",
+  "description": "Reverse polish calculator",
+  "keywords": ["terminal", "calculator", "reverse-polish"],
+  "license": "GPLv3",
   "src": ["src/*", "deps/*"]
 }

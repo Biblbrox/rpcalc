@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h> /* для atof() */
+#include <stdlib.h>
 #include <stdint.h>
 #include <math.h>
 #include <errno.h>
@@ -14,6 +14,8 @@
 #define MAX_LINE_SIZE 1000
 
 static StackNode *top = NULL;
+static int fromexpr = 0;
+static char expr[MAX_LINE_SIZE];
 
 static int init(void) 
 {
@@ -24,6 +26,12 @@ static int init(void)
     top = (StackNode *) malloc(sizeof(StackNode));
 
     return top == NULL ? -1 : 0;
+}
+
+static void print_promt(void)
+{
+    if (!fromexpr)
+        printf(GREEN">>> "RESET);
 }
 
 static void clean(void)
@@ -92,7 +100,7 @@ int resolve_expr(char *line)
                 if (op2 != 0)
                     stack_push(&top, (int)stack_pop(&top) % (int)op2);
                 else {
-                    print_error("error: nyll division");
+                    print_error("error: null division");
                     stack_pop(&top);
                 }
                 break;
@@ -169,6 +177,21 @@ int resolve_expr(char *line)
     return ret;
 }
 
+static int getexpr(char *line, size_t maxlen) 
+{
+    static int count = 1; 
+    if (fromexpr) {
+        if (count) {
+            strcpy(line, expr);
+            --count; 
+            return strlen(line);
+        } else 
+            return 0;
+    }
+
+    return getlinen(line, maxlen, stdin);
+}
+
 static int main_loop(void)
 {
     char line[MAX_LINE_SIZE];
@@ -177,8 +200,7 @@ static int main_loop(void)
     int8_t code;
 
     print_promt();
-
-    while (getlinen(line, line_size, stdin)) {
+    while (getexpr(line, line_size)) {
         code = resolve_expr(line); 
         if (code == -1) {
             success = 0;
@@ -190,8 +212,32 @@ static int main_loop(void)
     return success ? 0 : -1;
 }
 
-int main ()
+int main (int argc, char *argv[])
 {
+    if (argc > 2) 
+        print_crit("rpcalc: too many arguments\n");
+
+    char c;
+    char *pos;
+    while (--argc > 0 && (*++argv)[0] == '-') {
+        c = *++argv[0];
+        switch(c) {
+            case 'e':
+                if ((c = *++argv[0]) != '=') 
+                    print_crit("rpcalc: wrong argument syntax\n");
+
+                ++argv[0];
+                pos = strchr(*argv, '\0');
+
+                strncpy(expr, *argv, pos - *argv);
+                fromexpr = 1;
+
+                break;
+            default:
+                break;
+        } 
+    }
+        
     init();
 
     if (main_loop() == -1) {
